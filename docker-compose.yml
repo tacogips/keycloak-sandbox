@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  ### ----------------------------------------------------------------
+  auth_db:
+    image: postgres
+    restart: always
+    volumes:
+      - ./volume/auth_db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: db_admin
+      POSTGRES_PASSWORD: db_admin
+      POSTGRES_DB: auth_database
+    ports:
+      - 15432:5432
+
+#  ### ----------------------------------------------------------------
+  auth_server:
+    #image: quay.io/keycloak/keycloak:latest
+    #image: tacogips/keycloak-sandbox:latest
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    depends_on:
+      - "auth_db"
+    links:
+      - "auth_db:auth_db"
+    environment:
+      KEYCLOAK_USER: auth_admin
+      KEYCLOAK_PASSWORD: auth_admin
+      DB_VENDOR: postgres
+      DB_ADDR: auth_db
+      DB_PORT: 5432
+      DB_USER: db_admin
+      DB_PASSWORD: db_admin
+      DB_DATABASE: auth_database
+
+    ports:
+      - 5014:8080
+
